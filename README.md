@@ -67,7 +67,6 @@ sudo systemctl status jenkins
 ```bash
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 ```
-
 - Install suggested plugins, set up an admin user.
 
 ---
@@ -92,7 +91,7 @@ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
 ---
 
-## ⚙️ Website + Pipeline Setup
+## ⚙️ Website + Jenkins Pipeline Setup
 
 ### In `AWS-S3-Web_app/`
 1. Clone the repo:
@@ -108,6 +107,43 @@ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
 ---
 
+## 🔗 Jenkins Job Setup
+
+1. In Jenkins Dashboard → **New Item → Pipeline**  
+   - Name: `AWS-S3-Website`  
+   - Type: **Pipeline**  
+
+2. In pipeline config:
+   - Definition: **Pipeline script from SCM**  
+   - SCM: **Git**  
+   - Repo URL: `https://github.com/anshu-nayak/AWS-S3-Web_app.git`  
+   - Branch: `main`  
+   - Script Path: `Jenkinsfile`  
+
+3. Save and **Build Now** (first run should deploy site).
+
+---
+
+## 🔔 GitHub Webhook Setup
+
+1. Go to your GitHub repo → **Settings → Webhooks → Add Webhook**  
+2. Payload URL:  
+   ```
+   http://<EC2-Public-IP>:8080/github-webhook/
+   ```  
+   (ensure your EC2 security group allows inbound on port `8080`)  
+
+3. Content type: `application/json`  
+4. Events: Select **Just the push event**  
+5. Save webhook  
+
+6. In Jenkins → Install plugin **GitHub Integration**  
+   - Then configure job to **Build Triggers → GitHub hook trigger for GITScm polling**  
+
+Now Jenkins will trigger automatically on every GitHub push 🚀  
+
+---
+
 ## 🌍 Access the Website
 After pipeline runs, the site will be available at:
 ```
@@ -117,11 +153,12 @@ http://aws-project-website-code-bucket.s3-website-ap-south-1.amazonaws.com
 ---
 
 ## 🚀 CI/CD Flow
-1. Developer pushes code → GitHub (`AWS-S3-Web_app`)
-2. Jenkins job triggers
-3. Terraform provisions infrastructure
-4. Website files deployed to S3
-5. Static site available via S3 endpoint
+1. Developer pushes code → GitHub (`AWS-S3-Web_app`)  
+2. GitHub webhook notifies Jenkins  
+3. Jenkins job runs automatically  
+4. Terraform provisions infrastructure  
+5. Website files deployed to S3  
+6. Static site available via S3 endpoint  
 
 ---
 
